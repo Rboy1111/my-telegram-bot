@@ -5,7 +5,8 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 app = Flask(__name__)
 
-BOT_TOKEN = "توکن‌تو-اینجا-بزار"
+# توکن ربات شما (در آینده حتماً با روش امن‌تر جایگزینش کن!)
+BOT_TOKEN = "7563988685:AAE0NDW9sksCzFzz4SlqX5aiJINseHhxxpY"
 
 @app.route('/')
 def home():
