@@ -1,102 +1,123 @@
-import logging
-from telegram import Update, ForceReply
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    MessageHandler,
-    ContextTypes,
-    filters,
-)
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 
-BOT_TOKEN = "7563988685:AAE0NDW9sksCzFzz4SlqX5aiJINseHhxxpY"
+BOT_TOKEN = "توکن_ربات_تو_اینجا_قرار_بده"
 
-# تنظیمات لاگ
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-logger = logging.getLogger(__name__)
+# منوی اصلی
+def main_menu_keyboard():
+    keyboard = [
+        [InlineKeyboardButton("🏢 معرفی شرکت", callback_data='company')],
+        [InlineKeyboardButton("🛡️ خرید VPN", callback_data='vpn')],
+        [InlineKeyboardButton("💬 نظرات مشتریان", callback_data='reviews')],
+        [InlineKeyboardButton("📞 تماس با ما", callback_data='contact')],
+        [InlineKeyboardButton("❓ راهنما", callback_data='help')]
+    ]
+    return InlineKeyboardMarkup(keyboard)
 
-# حافظه ساده برای ذخیره داده‌ها (موقتی)
-user_data_store = {}
+# منوی VPN
+def vpn_menu_keyboard():
+    keyboard = [
+        [InlineKeyboardButton("🌐 خرید اشتراک ماهانه", callback_data='buy_monthly')],
+        [InlineKeyboardButton("🌐 خرید اشتراک سالانه", callback_data='buy_yearly')],
+        [InlineKeyboardButton("⬅️ بازگشت به منوی اصلی", callback_data='main_menu')]
+    ]
+    return InlineKeyboardMarkup(keyboard)
 
+# پاسخ به دستور /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    await update.message.reply_html(
-        rf"سلام <b>{user.first_name}</b>! به ربات حرفه‌ای من خوش آمدی.\n"
-        "برای راهنما /help را بزنید."
+    welcome_text = (
+        "سلام!\n"
+        "به ربات رسمی شرکت ما خوش آمدید. با این ربات می‌توانید:\n"
+        "✅ با شرکت ما آشنا شوید\n"
+        "✅ خدمات VPN ما را خریداری کنید\n"
+        "✅ نظرات مشتریان را بخوانید\n"
+        "✅ با ما تماس بگیرید\n"
+        "\nلطفا یکی از گزینه‌ها را انتخاب کنید:"
     )
+    await update.message.reply_text(welcome_text, reply_markup=main_menu_keyboard())
 
+# دستور راهنما /help
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     help_text = (
-        "دستورهای موجود:\n"
-        "/start - شروع کار با ربات\n"
-        "/help - نمایش راهنما\n"
-        "/echo - تکرار پیامی که ارسال می‌کنید\n"
-        "/info - دریافت اطلاعات درباره شما\n"
-        "/save <متن> - ذخیره یک متن برای شما\n"
-        "/show - نمایش متنی که ذخیره کردید\n"
+        "/start - شروع\n"
+        "/help - راهنمای استفاده\n"
+        "از منوی دکمه‌ها استفاده کنید."
     )
     await update.message.reply_text(help_text)
 
-async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # تکرار همان پیامی که کاربر فرستاده
-    await update.message.reply_text(update.message.text)
+# هندلر دکمه‌ها (کال‌بک)
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    data = query.data
 
-async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    info_text = (
-        f"شناسه شما: {user.id}\n"
-        f"نام شما: {user.first_name}\n"
-        f"نام کاربری: @{user.username if user.username else 'ندارد'}"
-    )
-    await update.message.reply_text(info_text)
-
-async def save_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    text_to_save = " ".join(context.args)
-    if not text_to_save:
-        await update.message.reply_text("لطفا متنی برای ذخیره ارسال کنید. مثال:\n/save سلام")
-        return
-    user_data_store[user_id] = text_to_save
-    await update.message.reply_text("متن شما ذخیره شد!")
-
-async def show_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    saved_text = user_data_store.get(user_id)
-    if saved_text:
-        await update.message.reply_text(f"متن ذخیره شده شما:\n{saved_text}")
-    else:
-        await update.message.reply_text("هیچ متنی ذخیره نشده است.")
-
-async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "دستور ناشناخته است. لطفا /help را برای مشاهده دستورات استفاده کنید."
-    )
-
-async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-    logger.error(msg="Exception while handling an update:", exc_info=context.error)
-    if update and hasattr(update, "message") and update.message:
-        await update.message.reply_text(
-            "خطایی رخ داد. لطفا دوباره تلاش کنید."
+    if data == 'main_menu':
+        await query.edit_message_text(
+            "به منوی اصلی بازگشتید. لطفا گزینه مورد نظر را انتخاب کنید:",
+            reply_markup=main_menu_keyboard()
         )
+    elif data == 'company':
+        company_text = (
+            "🏢 شرکت ما:\n"
+            "شرکت [نام شرکت شما] با بیش از ۱۰ سال سابقه در زمینه خدمات فناوری اطلاعات و امنیت شبکه فعالیت می‌کند.\n"
+            "ما متعهد به ارائه بهترین خدمات VPN با بالاترین کیفیت و پشتیبانی ۲۴/۷ هستیم.\n"
+            "برای کسب اطلاعات بیشتر به وبسایت ما مراجعه کنید:\n"
+            "https://example.com"
+        )
+        await query.edit_message_text(company_text, reply_markup=main_menu_keyboard())
+    elif data == 'vpn':
+        await query.edit_message_text(
+            "🛡️ خدمات VPN ما:\n"
+            "شما می‌توانید اشتراک‌های متنوع ماهانه و سالانه را خریداری کنید.\n"
+            "لطفا نوع اشتراک مورد نظر خود را انتخاب کنید:",
+            reply_markup=vpn_menu_keyboard()
+        )
+    elif data == 'buy_monthly':
+        await query.edit_message_text(
+            "🌐 اشتراک ماهانه VPN فقط با ۹۹ هزار تومان.\n"
+            "برای خرید و پرداخت به این لینک مراجعه کنید:\n"
+            "https://example.com/buy_monthly"
+        )
+    elif data == 'buy_yearly':
+        await query.edit_message_text(
+            "🌐 اشتراک سالانه VPN فقط با ۹۹۹ هزار تومان.\n"
+            "برای خرید و پرداخت به این لینک مراجعه کنید:\n"
+            "https://example.com/buy_yearly"
+        )
+    elif data == 'reviews':
+        reviews_text = (
+            "💬 نظرات مشتریان ما:\n"
+            "⭐️⭐️⭐️⭐️⭐️  \n"
+            "این سرویس عالیه، پشتیبانی فوق العاده و سرعت عالی.\n\n"
+            "⭐️⭐️⭐️⭐️⭐️  \n"
+            "من همیشه از این VPN استفاده می‌کنم و راضی‌ام."
+        )
+        await query.edit_message_text(reviews_text, reply_markup=main_menu_keyboard())
+    elif data == 'contact':
+        contact_text = (
+            "📞 تماس با ما:\n"
+            "تلفن: ۰۱۲۳۴۵۶۷۸۹\n"
+            "ایمیل: info@example.com\n"
+            "اینستاگرام: https://instagram.com/yourcompany\n"
+            "تلگرام: @yourcompany"
+        )
+        await query.edit_message_text(contact_text, reply_markup=main_menu_keyboard())
+    elif data == 'help':
+        await query.edit_message_text(
+            "برای استفاده از ربات از منوی دکمه‌ها استفاده کنید.\n"
+            "در صورت نیاز به راهنمایی بیشتر با پشتیبانی تماس بگیرید.",
+            reply_markup=main_menu_keyboard()
+        )
+    else:
+        await query.edit_message_text("دستور ناشناخته! لطفا دوباره تلاش کنید.", reply_markup=main_menu_keyboard())
 
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
-    app.add_handler(CommandHandler("echo", echo))
-    app.add_handler(CommandHandler("info", info))
-    app.add_handler(CommandHandler("save", save_text))
-    app.add_handler(CommandHandler("show", show_text))
+    app.add_handler(CallbackQueryHandler(button_handler))
 
-    # مدیریت پیام‌های ناشناخته
-    app.add_handler(MessageHandler(filters.COMMAND, unknown))
-
-    # مدیریت خطا
-    app.add_error_handler(error_handler)
-
-    logger.info("ربات حرفه‌ای شروع به کار کرد.")
     app.run_polling()
 
 if __name__ == "__main__":
