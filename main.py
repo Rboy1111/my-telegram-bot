@@ -1,9 +1,8 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 
-BOT_TOKEN = "توکن_ربات_تو_اینجا_قرار_بده"
+BOT_TOKEN = "7563988685:AAE0NDW9sksCzFzz4SlqX5aiJINseHhxxpY"
 
-# منوی اصلی
 def main_menu_keyboard():
     keyboard = [
         [InlineKeyboardButton("🏢 معرفی شرکت", callback_data='company')],
@@ -14,7 +13,6 @@ def main_menu_keyboard():
     ]
     return InlineKeyboardMarkup(keyboard)
 
-# منوی VPN
 def vpn_menu_keyboard():
     keyboard = [
         [InlineKeyboardButton("🌐 خرید اشتراک ماهانه", callback_data='buy_monthly')],
@@ -23,7 +21,6 @@ def vpn_menu_keyboard():
     ]
     return InlineKeyboardMarkup(keyboard)
 
-# پاسخ به دستور /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_text = (
         "سلام!\n"
@@ -36,7 +33,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(welcome_text, reply_markup=main_menu_keyboard())
 
-# دستور راهنما /help
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     help_text = (
         "/start - شروع\n"
@@ -45,7 +41,6 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(help_text)
 
-# هندلر دکمه‌ها (کال‌بک)
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
