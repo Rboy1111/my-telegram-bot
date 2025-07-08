@@ -1,30 +1,21 @@
-from flask import Flask, request
-from telegram import Bot, Update
-from telegram.ext import Dispatcher, CommandHandler
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-import os
+BOT_TOKEN = "7563988685:AAE0NDW9sksCzFzz4SlqX5aiJINseHhxxpY"
 
-app = Flask(__name__)
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("سلام! من ربات هستم و با polling کار می‌کنم.")
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("دستورهای ربات:\n/start\n/help")
 
-bot = Bot(token=BOT_TOKEN)
-dispatcher = Dispatcher(bot, None, workers=0)
+def main():
+    application = ApplicationBuilder().token(BOT_TOKEN).build()
 
-def start(update, context):
-    update.message.reply_text("سلام! ربات با وبهوک روشنه.")
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help_command))
 
-dispatcher.add_handler(CommandHandler("start", start))
-
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    update = Update.de_json(request.get_json(force=True), bot)
-    dispatcher.process_update(update)
-    return "OK"
-
-@app.route('/')
-def index():
-    return "ربات آنلاین است!"
+    application.run_polling()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    main()
