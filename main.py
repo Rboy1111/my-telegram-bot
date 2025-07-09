@@ -1,7 +1,24 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 
+from flask import Flask
+from threading import Thread
+
 BOT_TOKEN = "7563988685:AAE0NDW9sksCzFzz4SlqX5aiJINseHhxxpY"
+
+# Flask server to keep the app alive on Render
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot is running."
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
 
 def main_menu_keyboard():
     keyboard = [
@@ -107,6 +124,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("دستور ناشناخته! لطفا دوباره تلاش کنید.", reply_markup=main_menu_keyboard())
 
 def main():
+    keep_alive()  # روشن نگه داشتن اپلیکیشن در Render با سرور Flask
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
