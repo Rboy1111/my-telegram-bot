@@ -6,7 +6,7 @@ from email.mime.text import MIMEText
 BOT_TOKEN = "7563988685:AAE0NDW9sksCzFzz4SlqX5aiJINseHhxxpY"
 
 EMAIL_SENDER = "mahi1373ahmadi@gmail.com"
-EMAIL_PASSWORD = "amolamol"  # توجه: بهتره از App Password واقعی استفاده کنی
+EMAIL_PASSWORD = "amolamol"  # بهتره App Password استفاده کنی
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
@@ -40,7 +40,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("لطفا ایمیل خود را وارد کنید:")
         return GET_EMAIL
 
-    # گزینه‌های دیگر
+    # بقیه دکمه‌ها رو اینجا اضافه کن اگر خواستی
     await query.edit_message_text("دستور ناشناخته!", reply_markup=main_menu_keyboard())
     return ConversationHandler.END
 
